@@ -78,15 +78,15 @@ func ProcessDataJobs() {
 	for v := range DataJobQueue {
 		switch v.JobType {
 		case LoadData:
-			go LoadToDoList(v)
+			LoadToDoList(v)
 		case FetchData:
-			go FetchToDoList(v)
+			FetchToDoList(v)
 		case AddData:
-			go AddToDoItem(v)
+			AddToDoItem(v)
 		case UpdateData:
-			go UpdateToDoItem(v)
+			UpdateToDoItem(v)
 		case DeleteData:
-			go DeleteToDoItem(v)
+			DeleteToDoItem(v)
 		case StoreData:
 			PersistEntries(v)
 		}
