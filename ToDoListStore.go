@@ -234,11 +234,13 @@ func PersistEntries(dataJob DataStoreJob) {
 	if len(UserToDoList) > 0 {
 		for i, u := range UserToDoList {
 			for _, v := range SortedMap(u) {
-				_, err := file.WriteString(i + "," + v.Item + "\n")
-				if err != nil {
-					returnChannelData.Err = err
-					dataJob.ReturnChannel <- returnChannelData
-					return
+				if v.Item != "" {
+					_, err := file.WriteString(i + "," + v.Item + "\n")
+					if err != nil {
+						returnChannelData.Err = err
+						dataJob.ReturnChannel <- returnChannelData
+						return
+					}
 				}
 			}
 		}
