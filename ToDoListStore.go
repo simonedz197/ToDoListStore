@@ -93,7 +93,7 @@ func ProcessDataJobs() {
 	}
 }
 
-func getUserList(uid string) map[int]string {
+func GetUserList(uid string) map[int]string {
 	userlist, found := UserToDoList[uid]
 	if !found {
 		userlist = make(map[int]string)
@@ -117,7 +117,7 @@ func LoadToDoList(dataJob DataStoreJob) {
 			line := strings.Split(s, ",")
 			if len(line) == 2 {
 				uid := line[0]
-				userlist := getUserList(uid)
+				userlist := GetUserList(uid)
 				index := getNewKey(userlist)
 				userlist[index] = line[1]
 				UserToDoList[uid] = userlist
@@ -132,7 +132,7 @@ func AddToDoItem(dataJob DataStoreJob) {
 	defer close(dataJob.ReturnChannel)
 	returnChannelData := ReturnChannelData{nil, nil}
 
-	userlist := getUserList(dataJob.Uid)
+	userlist := GetUserList(dataJob.Uid)
 
 	idx := itemExists(userlist, dataJob.KeyValue)
 
@@ -149,34 +149,11 @@ func AddToDoItem(dataJob DataStoreJob) {
 	dataJob.ReturnChannel <- returnChannelData
 }
 
-func BasicAddToDoItem(uid string, item string) error {
-	userlist := getUserList(uid)
-	idx := itemExists(userlist, item)
-	if idx != -1 {
-		return AlreadyExistsErr
-	}
-	idx = getNewKey(userlist)
-	userlist[idx] = item
-	UserToDoList[uid] = userlist
-	return nil
-}
-
-func BasicUpdateToDoItem(uid string, item string, replacewith string) error {
-	userlist := getUserList(uid)
-	idx := itemExists(userlist, item)
-	if idx == -1 {
-		return NotFoundErr
-	}
-	userlist[idx] = replacewith
-	UserToDoList[uid] = userlist
-	return nil
-}
-
 func UpdateToDoItem(dataJob DataStoreJob) {
 	defer close(dataJob.ReturnChannel)
 	returnChannelData := ReturnChannelData{nil, nil}
 
-	userlist := getUserList(dataJob.Uid)
+	userlist := GetUserList(dataJob.Uid)
 
 	idx := itemExists(userlist, dataJob.KeyValue)
 	if idx == -1 {
@@ -190,31 +167,11 @@ func UpdateToDoItem(dataJob DataStoreJob) {
 	dataJob.ReturnChannel <- returnChannelData
 }
 
-func BasicDeleteToDoItem(uid string, item string) error {
-	userlist := getUserList(uid)
-
-	if item == "*" {
-		// remove all items by just recreating the map
-		userlist = make(map[int]string)
-		UserToDoList[uid] = userlist
-		return nil
-	}
-
-	idx := itemExists(userlist, item)
-	if idx == -1 {
-		return NotFoundErr
-	}
-
-	delete(userlist, idx)
-	UserToDoList[uid] = userlist
-	return nil
-}
-
 func DeleteToDoItem(dataJob DataStoreJob) {
 	defer close(dataJob.ReturnChannel)
 	returnChannelData := ReturnChannelData{nil, nil}
 
-	userlist := getUserList(dataJob.Uid)
+	userlist := GetUserList(dataJob.Uid)
 
 	if dataJob.KeyValue == "*" {
 		// remove all items by just recreating the map
@@ -234,6 +191,49 @@ func DeleteToDoItem(dataJob DataStoreJob) {
 	delete(userlist, idx)
 	UserToDoList[dataJob.Uid] = userlist
 	returnChannelData.List = userlist
+}
+
+func BasicAddToDoItem(uid string, item string) error {
+	userlist := GetUserList(uid)
+	idx := itemExists(userlist, item)
+	if idx != -1 {
+		return AlreadyExistsErr
+	}
+	idx = getNewKey(userlist)
+	userlist[idx] = item
+	UserToDoList[uid] = userlist
+	return nil
+}
+
+func BasicUpdateToDoItem(uid string, item string, replacewith string) error {
+	userlist := GetUserList(uid)
+	idx := itemExists(userlist, item)
+	if idx == -1 {
+		return NotFoundErr
+	}
+	userlist[idx] = replacewith
+	UserToDoList[uid] = userlist
+	return nil
+}
+
+func BasicDeleteToDoItem(uid string, item string) error {
+	userlist := GetUserList(uid)
+
+	if item == "*" {
+		// remove all items by just recreating the map
+		userlist = make(map[int]string)
+		UserToDoList[uid] = userlist
+		return nil
+	}
+
+	idx := itemExists(userlist, item)
+	if idx == -1 {
+		return NotFoundErr
+	}
+
+	delete(userlist, idx)
+	UserToDoList[uid] = userlist
+	return nil
 }
 
 func FetchToDoList(dataJob DataStoreJob) {
