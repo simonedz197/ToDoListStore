@@ -126,7 +126,6 @@ func LoadToDoList(dataJob DataStoreJob) {
 	}
 	returnChannelValue.List = UserToDoList[dataJob.Uid]
 	dataJob.ReturnChannel <- returnChannelValue
-	return
 }
 
 func AddToDoItem(dataJob DataStoreJob) {
@@ -148,7 +147,29 @@ func AddToDoItem(dataJob DataStoreJob) {
 	UserToDoList[dataJob.Uid] = userlist
 	returnChannelData.List = UserToDoList[dataJob.Uid]
 	dataJob.ReturnChannel <- returnChannelData
-	return
+}
+
+func BasicAddToDoItem(uid string, item string) error {
+	userlist := getUserList(uid)
+	idx := itemExists(userlist, item)
+	if idx != -1 {
+		return AlreadyExistsErr
+	}
+	idx = getNewKey(userlist)
+	userlist[idx] = item
+	UserToDoList[uid] = userlist
+	return nil
+}
+
+func BasicUpdateToDoItem(uid string, item string, replacewith string) error {
+	userlist := getUserList(uid)
+	idx := itemExists(userlist, item)
+	if idx == -1 {
+		return NotFoundErr
+	}
+	userlist[idx] = replacewith
+	UserToDoList[uid] = userlist
+	return nil
 }
 
 func UpdateToDoItem(dataJob DataStoreJob) {
@@ -167,7 +188,26 @@ func UpdateToDoItem(dataJob DataStoreJob) {
 	UserToDoList[dataJob.Uid] = userlist
 	returnChannelData.List = userlist
 	dataJob.ReturnChannel <- returnChannelData
-	return
+}
+
+func BasicDeleteToDoItem(uid string, item string) error {
+	userlist := getUserList(uid)
+
+	if item == "*" {
+		// remove all items by just recreating the map
+		userlist = make(map[int]string)
+		UserToDoList[uid] = userlist
+		return nil
+	}
+
+	idx := itemExists(userlist, item)
+	if idx == -1 {
+		return NotFoundErr
+	}
+
+	delete(userlist, idx)
+	UserToDoList[uid] = userlist
+	return nil
 }
 
 func DeleteToDoItem(dataJob DataStoreJob) {
@@ -194,7 +234,6 @@ func DeleteToDoItem(dataJob DataStoreJob) {
 	delete(userlist, idx)
 	UserToDoList[dataJob.Uid] = userlist
 	returnChannelData.List = userlist
-	return
 }
 
 func FetchToDoList(dataJob DataStoreJob) {
@@ -247,7 +286,6 @@ func PersistEntries(dataJob DataStoreJob) {
 	}
 	returnChannelData.List = nil
 	dataJob.ReturnChannel <- returnChannelData
-	return
 }
 
 func getNewKey(userlist map[int]string) int {
