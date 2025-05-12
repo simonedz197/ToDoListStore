@@ -193,6 +193,51 @@ func DeleteToDoItem(dataJob DataStoreJob) {
 	returnChannelData.List = userlist
 }
 
+func BasicLoadToDoList() error {
+
+	file, err := os.OpenFile("todo.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		Logger.ErrorContext(context.Background(), fmt.Sprintf("error %v opening todo file", err))
+		return err
+	}
+	defer file.Close()
+	scan1 := bufio.NewScanner(file)
+	for scan1.Scan() {
+		if s := scan1.Text(); s != "" {
+			line := strings.Split(s, ",")
+			if len(line) == 2 {
+				uid := line[0]
+				userlist := GetUserList(uid)
+				index := getNewKey(userlist)
+				userlist[index] = line[1]
+				UserToDoList[uid] = userlist
+			}
+		}
+	}
+	return nil
+}
+
+func BasicPersistEntries() error {
+	file, err := os.Create("todo.txt")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	if len(UserToDoList) > 0 {
+		for i, u := range UserToDoList {
+			for _, v := range SortedMap(u) {
+				if v.Item != "" {
+					_, err := file.WriteString(i + "," + v.Item + "\n")
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func BasicAddToDoItem(uid string, item string) error {
 	userlist := GetUserList(uid)
 	idx := itemExists(userlist, item)
