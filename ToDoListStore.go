@@ -74,7 +74,7 @@ type DataStoreJob struct {
 	ReturnChannel chan ReturnChannelData
 }
 
-var DataJobQueue = make(chan DataStoreJob, 100)
+var DataJobQueue = make(chan DataStoreJob, 1000)
 
 func ProcessDataJobs() {
 	for v := range DataJobQueue {
