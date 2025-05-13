@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 )
 
 type ToDoItem struct {
@@ -17,6 +18,7 @@ type ToDoItem struct {
 
 type baseToDoList map[int]string
 
+var mutex sync.Mutex
 var UserToDoList = make(map[string]baseToDoList)
 
 //var mToDoList = make(map[int]string)
@@ -194,6 +196,11 @@ func DeleteToDoItem(dataJob DataStoreJob) {
 }
 
 func BasicLoadToDoList() error {
+	mutex.Lock()
+
+	defer func() {
+		mutex.Unlock()
+	}()
 
 	file, err := os.OpenFile("todo.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
@@ -239,6 +246,12 @@ func BasicPersistEntries() error {
 }
 
 func BasicAddToDoItem(uid string, item string) error {
+	mutex.Lock()
+
+	defer func() {
+		mutex.Unlock()
+	}()
+
 	userlist := GetUserList(uid)
 	idx := itemExists(userlist, item)
 	if idx != -1 {
@@ -251,6 +264,12 @@ func BasicAddToDoItem(uid string, item string) error {
 }
 
 func BasicUpdateToDoItem(uid string, item string, replacewith string) error {
+	mutex.Lock()
+
+	defer func() {
+		mutex.Unlock()
+	}()
+
 	userlist := GetUserList(uid)
 	idx := itemExists(userlist, item)
 	if idx == -1 {
@@ -262,6 +281,12 @@ func BasicUpdateToDoItem(uid string, item string, replacewith string) error {
 }
 
 func BasicDeleteToDoItem(uid string, item string) error {
+	mutex.Lock()
+
+	defer func() {
+		mutex.Unlock()
+	}()
+
 	userlist := GetUserList(uid)
 
 	if item == "*" {
