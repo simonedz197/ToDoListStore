@@ -50,6 +50,7 @@ func (h *ContextHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 type JobType int
+type LogType int
 
 const (
 	LoadData = iota
@@ -58,6 +59,11 @@ const (
 	UpdateData
 	DeleteData
 	StoreData
+)
+
+const (
+	InfoLog  = 1
+	ErrorLog = 2
 )
 
 type ReturnChannelData struct {
@@ -74,7 +80,15 @@ type DataStoreJob struct {
 	ReturnChannel chan ReturnChannelData
 }
 
+type LoggerJob struct {
+	LogType       LogType
+	Context       context.Context
+	LogMessage    string
+	ReturnChannel chan bool
+}
+
 var DataJobQueue = make(chan DataStoreJob, 1000)
+var LoggerJobQueue = make(chan LoggerJob, 1000)
 
 func ProcessDataJobs() {
 	for v := range DataJobQueue {
@@ -92,6 +106,20 @@ func ProcessDataJobs() {
 		case StoreData:
 			PersistEntries(v)
 		}
+	}
+}
+
+func ProcessLoggerJobs() {
+	for v := range LoggerJobQueue {
+		switch v.LogType {
+		case InfoLog:
+			Logger.InfoContext(v.Context, v.LogMessage)
+		case ErrorLog:
+			Logger.ErrorContext(v.Context, v.LogMessage)
+		default:
+			Logger.InfoContext(v.Context, v.LogMessage)
+		}
+		close(v.ReturnChannel)
 	}
 }
 
