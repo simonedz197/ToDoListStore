@@ -26,12 +26,16 @@ var UserToDoList = make(map[string]baseToDoList)
 var NotFoundErr = fmt.Errorf("not found")
 var AlreadyExistsErr = fmt.Errorf("already exists")
 
-var logFile, err = os.OpenFile("todo.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
-var baseHandler = slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
-var customHandler = &ContextHandler{Handler: baseHandler}
-var Logger = slog.New(customHandler)
+// var logFile, err = os.OpenFile("todo.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+// var baseHandler = slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
+// var customHandler = &ContextHandler{Handler: baseHandler}
+var Logger *slog.Logger
 
-func init() {
+func InitLog(logFileName string) {
+	logFile, _ := os.OpenFile(logFileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	baseHandler := slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
+	customHandler := &ContextHandler{Handler: baseHandler}
+	Logger := slog.New(customHandler)
 	slog.SetDefault(Logger)
 }
 
@@ -81,10 +85,9 @@ type DataStoreJob struct {
 }
 
 type LoggerJob struct {
-	LogType       LogType
-	Context       context.Context
-	LogMessage    string
-	ReturnChannel chan bool
+	LogType    LogType
+	Context    context.Context
+	LogMessage string
 }
 
 var DataJobQueue = make(chan DataStoreJob, 1000)
@@ -119,7 +122,6 @@ func ProcessLoggerJobs() {
 		default:
 			Logger.InfoContext(v.Context, v.LogMessage)
 		}
-		close(v.ReturnChannel)
 	}
 }
 
