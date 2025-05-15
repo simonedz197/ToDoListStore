@@ -361,7 +361,7 @@ func SortedMap(userlist map[int]string) []ToDoItem {
 func PersistEntries(dataJob DataStoreJob) {
 	defer close(dataJob.ReturnChannel)
 	returnChannelData := ReturnChannelData{nil, nil}
-	file, err := os.Create("todo.txt")
+	file, err := os.Create(dataJob.KeyValue)
 	if err != nil {
 		returnChannelData.Err = err
 		dataJob.ReturnChannel <- returnChannelData
