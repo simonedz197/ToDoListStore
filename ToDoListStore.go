@@ -31,13 +31,9 @@ var logFilename = fmt.Sprintf("todo-%d.log", time.Now().UnixMicro())
 var logFile, err = os.OpenFile(logFilename, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 var baseHandler = slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
 var customHandler = &ContextHandler{Handler: baseHandler}
-var Logger *slog.Logger
+var Logger = slog.New(customHandler)
 
-func InitLog(logFileName string) {
-	logFile, _ := os.OpenFile(logFileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
-	baseHandler := slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
-	customHandler := &ContextHandler{Handler: baseHandler}
-	Logger := slog.New(customHandler)
+func Init() {
 	slog.SetDefault(Logger)
 }
 
