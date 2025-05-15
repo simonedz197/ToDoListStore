@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 type ToDoItem struct {
@@ -26,9 +27,10 @@ var UserToDoList = make(map[string]baseToDoList)
 var NotFoundErr = fmt.Errorf("not found")
 var AlreadyExistsErr = fmt.Errorf("already exists")
 
-// var logFile, err = os.OpenFile("todo.log", os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
-// var baseHandler = slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
-// var customHandler = &ContextHandler{Handler: baseHandler}
+var logFilename = fmt.Sprintf("todo-%d.log", time.Now().UnixMicro())
+var logFile, err = os.OpenFile(logFilename, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+var baseHandler = slog.NewTextHandler(logFile, &slog.HandlerOptions{AddSource: true})
+var customHandler = &ContextHandler{Handler: baseHandler}
 var Logger *slog.Logger
 
 func InitLog(logFileName string) {
