@@ -135,7 +135,7 @@ func LoadToDoList(dataJob DataStoreJob) {
 	defer close(dataJob.ReturnChannel)
 	returnChannelValue := ReturnChannelData{nil, nil}
 
-	file, err := os.OpenFile("todo.txt", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	file, err := os.OpenFile(dataJob.KeyValue, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		Logger.ErrorContext(dataJob.Context, fmt.Sprintf("error %v opening todo file", err))
 		returnChannelValue.Err = err
